@@ -10,6 +10,7 @@ path = './data/ten/'
 size = (250, 250)
 train = pd.DataFrame(columns=['id', 'img'])
 labels = pd.read_csv('./data/labels.csv', index_col=0)
+labels['breed'] = labels['breed'].astype('category')
 
 print(labels.head())
 
@@ -20,3 +21,14 @@ for f in os.listdir(path):
   train = train.append({'id': f, 'img': img, 'target': l}, ignore_index=True)
 
 print(train.head())
+
+x = train.drop(['id', 'target'], 1)
+y = train['target']
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=.25, random_state=1001)
+
+print(len(np.array(X_train['img'])[0]))
+
+# Define feature columns
+feature_columns = [
+  tf.feature_column.numeric_column('img', shape=[250]),
+]
