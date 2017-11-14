@@ -7,15 +7,24 @@ from keras.layers import Dense
 import os
 
 # Import the data
-path = './data/ten/'
-size = (300, 300)
-train = pd.DataFrame(columns=['id', 'img'])
+train_path = './data/train/'
+test_path = './data/ten/'
+size = (200, 200)
+x = []
+y = []
+test = []
+test_ids = []
 labels = pd.read_csv('./data/labels.csv', index_col=0)
+labels['breed'] = labels['breed'].astype('category')
+labels['breed_code'] = labels['breed'].cat.codes.astype(np.int_)
 
 print(labels.head())
 
-for f in os.listdir(path):
-  img = image.load_img(path + f)
+print(labels['breed'].unique())
+
+# Train data processing
+for f in os.listdir(test_path):
+  img = image.load_img(train_path + f)
   longer_side = max(img.size)
   horizontal_padding = (longer_side - img.size[0]) / 2
   vertical_padding = (longer_side - img.size[1]) / 2
@@ -28,9 +37,17 @@ for f in os.listdir(path):
     )
   )
   img = img.resize(size)
-  img.save(f'./data/proc/{f}')
   img = np.array(image.img_to_array(img))
-  l = labels.loc[f.replace('.jpg', ''), 'breed']
-  train = train.append({'id': f.replace('.jpg', ''), 'img': img, 'target': l}, ignore_index=True)
+  l = labels.loc[f.replace('.jpg', ''), 'breed_code']
+  x.append(img)
+  y.append(l)
 
-print(train.head())
+x = np.array(x, np.float32)
+y = np.array(y, np.int_)
+
+print(x.shape)
+print(y.shape)
+
+sub = pd.DataFrame(columns=labels['breed'].unique())
+
+print(sub)

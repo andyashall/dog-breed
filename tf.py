@@ -7,13 +7,15 @@ import os
 
 # Import the data
 train_path = './data/train/'
-test_path = './data/test/'
+test_path = './data/ten/'
 size = (200, 200)
 x = []
 y = []
 test = []
+test_ids = []
 labels = pd.read_csv('./data/labels.csv', index_col=0)
-labels['breed'] = labels['breed'].astype('category').cat.codes.astype(np.int_)
+labels['breed'] = labels['breed'].astype('category')
+labels['breed_code'] = labels['breed'].cat.codes.astype(np.int_)
 
 print(labels.head())
 
@@ -33,7 +35,7 @@ for f in os.listdir(train_path):
   )
   img = img.resize(size)
   img = np.array(image.img_to_array(img))
-  l = labels.loc[f.replace('.jpg', ''), 'breed']
+  l = labels.loc[f.replace('.jpg', ''), 'breed_code']
   x.append(img)
   y.append(l)
 
@@ -60,6 +62,7 @@ for f in os.listdir(test_path):
   img = img.resize(size)
   img = np.array(image.img_to_array(img))
   test.append(img)
+  test_ids.append(f.replace('.jpg', ''))
 
 test = np.array(test, np.float32)
 
@@ -90,7 +93,7 @@ train_input_fn = tf.estimator.inputs.numpy_input_fn(
 )
 
 # Traing the model
-model.train(train_input_fn, steps=1000)
+model.train(train_input_fn, steps=100)
 
 # Input for testing
 test_input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -119,5 +122,16 @@ pred = model.predict(pred_input_fn)
 
 preds = list(pred)
 
+# Need to convert cat codes to names and match ids
+
+sub = pd.DataFrame(columns=labels['breed'].unique())
+
+n = 0
 for p in preds:
-  print(p)
+  sub.loc[n] = p['probabilities']
+  n += 1
+
+sub['id'] = test_ids
+
+print(sub.head())
+
