@@ -9,7 +9,7 @@ from keras.callbacks import EarlyStopping
 import os
 
 # Import the data
-path = './data/train/'
+train_path = './data/train/'
 size = (300, 300)
 x = []
 y = []
@@ -18,8 +18,8 @@ labels['breed'] = labels['breed'].astype('category').cat.codes.astype(np.int_)
 
 print(labels.head())
 
-for f in os.listdir(path):
-  img = image.load_img(path + f)
+for f in os.listdir(train_path):
+  img = image.load_img(train_path + f)
   longer_side = max(img.size)
   horizontal_padding = (longer_side - img.size[0]) / 2
   vertical_padding = (longer_side - img.size[1]) / 2
@@ -45,10 +45,6 @@ print(y.shape)
 
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=.25, random_state=1001)
 
-# train['img'] = train['img'].apply(list).apply(pd.Series).astype(np.float32)
-
-# train.to_csv('./data/train.csv', index=False)
-
 base_model = VGG19(
   weights = None,
   include_top=False,
@@ -56,9 +52,9 @@ base_model = VGG19(
 )
 
 # Add a new top layer
-x = base_model.output
-x = Flatten()(x)
-predictions = Dense(120, activation='softmax')(x)
+out = base_model.output
+out = Flatten()(out)
+predictions = Dense(120, activation='softmax')(out)
 
 # This is the model we will train
 model = Model(inputs=base_model.input, outputs=predictions)
