@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-import tensorflow as tf
 from keras.preprocessing import image
+from keras.models import Sequential
+from keras.layers import Dense
 import os
 
 # Import the data
-path = './data/ten/'
+path = './data/train/'
 size = (300, 300)
 train = pd.DataFrame(columns=['id', 'img'])
 labels = pd.read_csv('./data/labels.csv', index_col=0)
@@ -27,10 +28,11 @@ for f in os.listdir(path):
     )
   )
   img = img.resize(size)
-  img.save(f'./data/proc/{f}')
   img = np.array(image.img_to_array(img))
   l = labels.loc[f.replace('.jpg', ''), 'breed']
   train = train.append({'id': f.replace('.jpg', ''), 'img': img, 'target': l}, ignore_index=True)
+
+print(train.head())
 
 train['target'] = train['target'].astype('category')
 x = train.drop(['id', 'target'], 1)
@@ -43,41 +45,30 @@ print(np.array(X_train['img'])[0].shape)
 
 # train.to_csv('./data/train.csv', index=False)
 
-# Define feature columns
-feature_columns = [
-  tf.feature_column.numeric_column('img', shape=[1, 120]),
-]
+model = Sequential()
 
-# Create model
-model = tf.estimator.DNNClassifier(
-  hidden_units  = [30, 60, 30],
-  feature_columns=feature_columns,
-  n_classes=120,
+model.add(Dense(units=64, activation='relu', input_shape=(300, 300, 1)))
+model.add(Dense(units=10, activation='softmax'))
+
+model.compile(
+  loss='categorical_crossentropy',
+  optimizer='sgd',
+  metrics=['accuracy']
 )
 
-# Input for training
-train_input_fn = tf.estimator.inputs.numpy_input_fn(
-  x={
-    'img': np.array(X_train.img.as_matrix()),
-  },
-  y=np.array(y_train.as_matrix()),
-  num_epochs=None,
-  shuffle=True
+model.fit(
+  X_train['img'],
+  y_train,
+  batch_size=128
 )
 
-# Traing the model
-model.train(train_input_fn, steps=100)
 
-# Input for testing
-test_input_fn = tf.estimator.inputs.numpy_input_fn(
-  x={
-    'img': np.array(X_test.img.as_matrix()),
-  },
-  y=np.array(y_test.as_matrix()),
-  num_epochs=1,
-  shuffle=False
+# loss_and_metrics = model.evaluate(X_test, y_test, batch_size=128)
+
+loss_and_metrics = model.evaluate(
+  X_test['img'],
+  y_test,
+  batch_size=128
 )
 
-# Get accuracy and print
-accuracy_score = model.evaluate(input_fn=test_input_fn)['accuracy']
-print(f'Acc: {accuracy_score}')
+print(loss_and_metrics)
