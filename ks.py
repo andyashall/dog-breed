@@ -11,8 +11,10 @@ import os
 # Import the data
 path = './data/train/'
 size = (300, 300)
-x_train = pd.DataFrame(columns=['id', 'img'])
+x = []
+y = []
 labels = pd.read_csv('./data/labels.csv', index_col=0)
+labels['breed'] = labels['breed'].astype('category').cat.codes.astype(np.int_)
 
 print(labels.head())
 
@@ -32,18 +34,18 @@ for f in os.listdir(path):
   img = img.resize(size)
   img = np.array(image.img_to_array(img))
   l = labels.loc[f.replace('.jpg', ''), 'breed']
-  train = train.append({'id': f.replace('.jpg', ''), 'img': img, 'target': l}, ignore_index=True)
+  x.append(img)
+  y.append(l)
 
-print(train.head())
+x = np.array(x, np.float32)
+y = np.array(y, np.int_)
 
-train['target'] = train['target'].astype('category')
-x = train.drop(['id', 'target'], 1)
-y = train['target'].cat.codes.astype(np.int_)
+print(x.shape)
+print(y.shape)
+
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=.25, random_state=1001)
 
 # train['img'] = train['img'].apply(list).apply(pd.Series).astype(np.float32)
-
-print(np.array(X_train['img']).shape)
 
 # train.to_csv('./data/train.csv', index=False)
 
