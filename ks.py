@@ -8,6 +8,14 @@ from keras.layers import Dense, Dropout, Flatten
 from keras.callbacks import EarlyStopping
 import os
 
+df_train = pd.read_csv('./data/labels.csv')
+df_test = pd.read_csv('./data/sample_submission.csv')
+
+targets_series = pd.Series(df_train['breed'])
+one_hot = pd.get_dummies(targets_series, sparse = True)
+
+one_hot_labels = np.asarray(one_hot)
+
 # Import the data
 train_path = './data/train/'
 test_path = './data/ten/'
@@ -15,14 +23,9 @@ size = (200, 200)
 x = []
 y = []
 test = []
-test_ids = []
-labels = pd.read_csv('./data/labels.csv', index_col=0)
-labels['breed'] = labels['breed'].astype('category')
-labels['breed_code'] = labels['breed'].cat.codes.astype(np.int_)
-
-print(labels.head())
 
 # Train data processing
+i = 0
 for f in os.listdir(train_path):
   img = image.load_img(train_path + f)
   longer_side = max(img.size)
@@ -38,14 +41,14 @@ for f in os.listdir(train_path):
   )
   img = img.resize(size)
   img = np.array(image.img_to_array(img))
-  l = labels.loc[f.replace('.jpg', ''), 'breed_code']
+  l = one_hot_labels[i]
   x.append(img)
   y.append(l)
+  i += 1
 
 x = np.array(x, np.float32)
 y = np.array(y, np.int_)
 
-print(x.shape)
 print(y.shape)
 
 # Test data processing
@@ -81,7 +84,7 @@ base_model = VGG19(
   input_shape=(200, 200, 3)
 )
 
-num_class = y.shape[0]
+num_class = y.shape[1]
 
 # Add a new top layer
 out = base_model.output
@@ -111,8 +114,8 @@ preds = model.predict(test, verbose=1)
 
 sub = pd.DataFrame(preds)
 
-sub.columns = labels['breed'].unique()
+sub.columns = one_hot.columns.values
 
-sub['id'] = test_ids
+sub['id'] = df_test['id']
 
 sub.head(5)
