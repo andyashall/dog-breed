@@ -8,6 +8,16 @@ from keras.layers import Dense, Dropout, Flatten
 from keras.callbacks import EarlyStopping
 import os
 
+def normalize(arr):
+  arr = arr.astype('float')
+  for i in range(3):
+    minval = arr[...,i].min()
+    maxval = arr[...,i].max()
+    if minval != maxval:
+      arr[...,i] -= minval
+      arr[...,i] *= (255.0/(maxval-minval))
+  return arr
+
 df_train = pd.read_csv('./data/labels.csv')
 df_test = pd.read_csv('./data/sample_submission.csv')
 
@@ -18,7 +28,7 @@ one_hot_labels = np.asarray(one_hot)
 
 # Import the data
 train_path = './data/train/'
-test_path = './data/ten/'
+test_path = './data/test/'
 size = (200, 200)
 x = []
 y = []
@@ -43,6 +53,7 @@ for f in os.listdir(train_path):
   img = img.resize(size)
   img = np.array(image.img_to_array(img))
   l = one_hot_labels[i]
+  img = normalize(img)
   x.append(img)
   y.append(l)
   i += 1
@@ -68,6 +79,7 @@ for f in os.listdir(test_path):
   )
   img = img.resize(size)
   img = np.array(image.img_to_array(img))
+  img = normalize(img)
   test.append(img)
   test_ids.append(f.replace('.jpg', ''))
 
@@ -119,4 +131,6 @@ sub.columns = one_hot.columns.values
 
 sub['id'] = test_ids
 
-sub.head(5)
+print(sub.head(5))
+
+sub.to_csv('sub.csv', index=False, float_format='%.3f')
