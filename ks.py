@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from keras.preprocessing import image
-from keras.applications.vgg19 import VGG19
+from keras.applications.xception import Xception
 from keras.models import Model
 from keras.layers import Dense, Dropout, Flatten
 from keras.callbacks import EarlyStopping
@@ -78,8 +78,8 @@ X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=.3, random_s
 
 print(y_test.shape)
 
-base_model = VGG19(
-  weights = None,
+base_model = Xception(
+  weights = 'imagenet',
   include_top=False,
   input_shape=(200, 200, 3)
 )
