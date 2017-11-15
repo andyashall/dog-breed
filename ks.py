@@ -23,6 +23,7 @@ size = (200, 200)
 x = []
 y = []
 test = []
+test_ids = []
 
 # Train data processing
 i = 0
@@ -116,6 +117,6 @@ sub = pd.DataFrame(preds)
 
 sub.columns = one_hot.columns.values
 
-sub['id'] = df_test['id']
+sub['id'] = test_ids
 
 sub.head(5)
