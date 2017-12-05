@@ -29,7 +29,7 @@ one_hot_labels = np.asarray(one_hot)
 # Import the data
 train_path = './data/train/'
 test_path = './data/test/'
-size = (200, 200)
+size = (60, 60)
 x = []
 y = []
 test = []
@@ -133,4 +133,4 @@ sub['id'] = test_ids
 
 print(sub.head(5))
 
-sub.to_csv('sub.csv', index=False, float_format='%.3f')
+# sub.to_csv('sub.csv', index=False, float_format='%.3f')
