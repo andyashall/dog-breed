@@ -94,7 +94,7 @@ print(y_test.shape)
 base_model = Xception(
   weights = 'imagenet',
   include_top=False,
-  input_shape=(200, 200, 3)
+  input_shape=(60, 60, 3)
 )
 
 num_class = y.shape[1]
